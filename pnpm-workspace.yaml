@@ -1,0 +1,7 @@
+allowBuilds:
+    '@deepseek-ai/dsh-subprocess-local': false
+    koffi: false
+    node-pty: false
+overrides:
+    zod: 4.6.6
+    undici: 8.12.2

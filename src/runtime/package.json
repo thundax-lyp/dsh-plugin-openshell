@@ -1,0 +1,17 @@
+{
+    "name": "dsh-sandbox-openshell-runtime",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "@deepseek-ai/dsh-sandbox-local": "0.2.1-rc.4",
+        "@deepseek-ai/cordis": "4.0.5",
+        "@deepseek-ai/dsh-fs-sandbox": "0.2.1-rc.4",
+        "@deepseek-ai/node-addon-system": "0.1.2",
+        "@vscode/ripgrep-linux-x64": "1.18.0"
+    },
+    "overrides": {
+        "zod": "4.6.6",
+        "undici": "8.12.2"
+    }
+}

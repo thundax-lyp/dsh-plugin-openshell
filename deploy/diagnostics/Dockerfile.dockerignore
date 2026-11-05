@@ -1,0 +1,6 @@
+**
+!Dockerfile
+!Dockerfile.dockerignore
+!diagnostics.mjs
+!probes/
+!probes/**

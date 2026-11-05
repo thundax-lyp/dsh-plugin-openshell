@@ -1,0 +1,41 @@
+name: dsh-sandbox-openshell
+
+services:
+    runtime:
+        image: ${DSH_OPENSHELL_RUNTIME_IMAGE:-dsh-sandbox-openshell-runtime:0.2.1-rc.4}
+        pull_policy: build
+        platform: linux/amd64
+        build:
+            context: ..
+            dockerfile: deploy/runtime/Dockerfile
+            network: ${DSH_OPENSHELL_BUILD_NETWORK:-default}
+            args:
+                NODE_IMAGE: ${DSH_OPENSHELL_NODE_IMAGE:-node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df}
+        user: '0:0'
+        network_mode: host
+        read_only: true
+        restart: 'no'
+        tmpfs:
+            - /tmp:mode=1777
+        entrypoint: [/usr/local/bin/node, /run/deploy/deploy.mjs]
+        environment:
+            DSH_OPENSHELL_GATEWAY_ENDPOINT: ${DSH_OPENSHELL_GATEWAY_ENDPOINT:-http://127.0.0.1:18080}
+            DSH_OPENSHELL_WORKSPACE: ${DSH_OPENSHELL_WORKSPACE:-default}
+            DSH_OPENSHELL_SANDBOX: ${DSH_OPENSHELL_SANDBOX:-dsh-openshell}
+            DSH_OPENSHELL_RUNTIME_IMAGE: ${DSH_OPENSHELL_RUNTIME_IMAGE:-dsh-sandbox-openshell-runtime:0.2.1-rc.4}
+            DSH_OPENSHELL_DEPLOY_TIMEOUT: ${DSH_OPENSHELL_DEPLOY_TIMEOUT:-120}
+        volumes:
+            - type: bind
+              source: ${DSH_OPENSHELL_CLI_PATH:-../runtime/bin/openshell}
+              target: /usr/local/bin/openshell
+              read_only: true
+              bind:
+                  create_host_path: false
+            - type: bind
+              source: ${DSH_OPENSHELL_CREDENTIALS_DIR:-../runtime/openshell-credentials}
+              target: /run/openshell-credentials
+              read_only: true
+              bind:
+                  create_host_path: false
+            - ./openshell/deploy.mjs:/run/deploy/deploy.mjs:ro
+            - ./openshell/policy.yaml:/run/deploy/policy.yaml:ro

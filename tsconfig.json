@@ -8,8 +8,10 @@
         "exactOptionalPropertyTypes": true,
         "verbatimModuleSyntax": true,
         "noEmit": true,
+        "allowImportingTsExtensions": true,
         "skipLibCheck": true,
-        "types": ["node"]
+        "types": ["node"],
+        "rootDir": "./src"
     },
     "include": ["src/**/*.ts"]
 }
