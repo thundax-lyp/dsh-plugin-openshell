@@ -1,0 +1,11 @@
+**
+!deploy/
+!deploy/runtime/
+!deploy/runtime/Dockerfile
+!deploy/runtime/Dockerfile.dockerignore
+!src/
+!src/runtime/
+!src/runtime/confine.mjs
+!src/runtime/package.json
+!src/runtime/package-lock.json
+!src/runtime/fs.mjs

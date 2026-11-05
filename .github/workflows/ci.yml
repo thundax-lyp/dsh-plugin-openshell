@@ -28,3 +28,9 @@ jobs:
             - uses: pnpm/action-setup@v6
             - run: pnpm install --frozen-lockfile
             - run: pnpm check
+            - run: pnpm test
+            - run: pnpm build
+            - run: docker compose -f deploy/compose.yaml config --quiet
+            - run: docker compose -f deploy/compose.yaml build runtime
+              env:
+                  DSH_OPENSHELL_RUNTIME_IMAGE: dsh-sandbox-openshell-runtime:ci

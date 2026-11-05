@@ -3,3 +3,9 @@ dist/
 coverage/
 pnpm-lock.yaml
 DRAFT.md
+
+tests/fixtures/runtime/*/package*.json
+
+/runtime/
+
+src/runtime/package*.json
