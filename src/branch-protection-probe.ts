@@ -1,1 +1,1 @@
-const protectionProbe: number = "fail";
+export const protectionProbe: number = 1;
