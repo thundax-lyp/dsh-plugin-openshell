@@ -1,0 +1,1 @@
+const protectionProbe: number = "fail";
