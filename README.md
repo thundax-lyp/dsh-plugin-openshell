@@ -1,5 +1,7 @@
 # dsh-plugin-openshell
 
+源码仓库：[thundax-lyp/dsh-plugin-openshell](https://github.com/thundax-lyp/dsh-plugin-openshell) · npm 包：[dsh-sandbox-openshell](https://www.npmjs.com/package/dsh-sandbox-openshell)
+
 让运行在沙箱外的 DSH，通过 OpenShell 官方 SDK 使用指定沙箱的命令执行、文件和工作目录能力，并施加逐调用文件权限。
 
 ![DSH 与 OpenShell 架构：沙箱外插件通过官方 SDK 调用同一沙箱的命令与文件能力](docs/assets/architecture.svg)
@@ -20,6 +22,14 @@
 | ❌   | 完整命令隔离            | 测试环境为 `partial`，默认严格模式拒绝受限命令；放宽检查不会获得完整隔离 |
 | ❌   | 整个进程树停止保证      | 主动脱离进程组的子进程仍可能存活                                         |
 | ❌   | 完整 DSH Agent 流程验收 | 尚未完成                                                                 |
+
+## 安装接入包
+
+```sh
+npm install --save-exact dsh-sandbox-openshell@0.1.0-rc.1
+```
+
+该预发布版本使用 `rc` dist-tag；下游应固定完整版本。npm 包提供已构建的 Provider、类型声明和沙箱 helper，不包含宿主部署工具；准备沙箱环境时从本仓库执行下面的部署步骤。DSH 0.2.1-rc.4、Cordis 4.0.5 及上表能力边界保持不变。
 
 ## 快速部署
 

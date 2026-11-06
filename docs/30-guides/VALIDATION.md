@@ -68,3 +68,9 @@ pnpm test:mtls
 ```
 
 [REQUIREMENTS.md](../10-requirements/REQUIREMENTS.md) 记录范围和验收条件；[DESIGN.md](../20-design/DESIGN.md) 记录实现、真实验证结果与缺口。
+
+## npm 发布产物验证
+
+`pnpm test:package` 构建并生成 tarball，核对允许发布的文件及凭据排除，再在隔离消费项目安装该 tarball，验证 JS 导出、文件／进程／工作区契约及完整 TypeScript 声明检查（不跳过依赖声明）。产物和校验摘要保存在忽略的 `runtime/releases/<版本>/`。
+
+预发布版本使用 `rc` dist-tag，下游固定 `dsh-sandbox-openshell@0.1.0-rc.1`；npm 包版本与 DSH 0.2.1-rc.4 协议版本分别管理。仓库未声明开源许可证，发布元数据使用 UNLICENSED。正式发布须使用同一份已验证 tarball，不在发布时重新构建或切换依赖基线。
