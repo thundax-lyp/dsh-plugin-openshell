@@ -2,17 +2,17 @@
 
 [返回 README](../../README.md) · [部署](DEPLOYMENT.md) · [接入](USAGE.md) · [验证与开发](VALIDATION.md)
 
-以下命令和示例从仓库根目录运行。部署沙箱后，再在沙箱外的 DSH 环境中接入。
+npm 安装后在调用方项目使用下面的包入口；部署与源码验证命令从本仓库根目录运行。部署沙箱后，再在沙箱外的 DSH 环境中接入。
 
 ## 安装沙箱外接入包
 
-本机使用 Node.js 22.19+ 的 22.x 或 Node.js 24+、pnpm 12.15.0。依赖基线见仓库 README。
+接入环境使用 Node.js 22.19+ 的 22.x 或 Node.js 24+。固定安装预发布版本：
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm build
-pnpm test
+npm install --save-exact dsh-sandbox-openshell@0.1.0-rc.1
 ```
+
+包使用 rc dist-tag；生产接入方应固定完整版本。依赖基线为 DSH 0.2.1-rc.4 / Cordis 4.0.5。npm 产物包含 dist（JS、类型、沙箱 helper 及其独立依赖清单）和公开文档，部署工具从源码仓库使用。沙箱 helper 的 DSH 协议版本仍为 0.2.1-rc.4，与接入包自身版本分别管理。
 
 在 DSH 所在环境准备 OpenShell 0.1.6 官方 TypeScript SDK，按[官方 SDK 安装说明](https://github.com/NVIDIA/OpenShell/blob/ac7f615cd12d5cc49cb16eb1f5f10ffeb1e90f47/sdk/typescript/README.md)配置 GitHub Packages，或使用该 release 源码构建。调用方负责创建并认证 SandboxClient。本包不内置 SDK 的认证或传输实现，也不分发凭据。
 
@@ -22,7 +22,7 @@ pnpm test
 
 ```js
 import { Context } from '@deepseek-ai/cordis';
-import { apply } from './dist/index.js';
+import { apply } from 'dsh-sandbox-openshell';
 import { SandboxClient } from '@nvidia/openshell-sdk';
 
 const gatewayEndpoint = 'http://127.0.0.1:18080';
