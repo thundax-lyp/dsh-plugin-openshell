@@ -69,6 +69,8 @@ try {
 
 `apply` 安装 `OpenShellFileSystem`、`OpenShellWorkspace`、`OpenShellSandboxProvider` 和使用同一连接配置的 `OpenShellSubprocessRuntime`。前者只包装 argv；后者负责在远端执行，保留 cwd 和输出语义。不能用本地进程 Provider 执行远端 launcher 路径。helper 调用和命令执行必须使用同一个 SDK client，缺少 client 时立即拒绝配置。
 
+固定输入与管道输入都会自动分帧，单次写入超过 1 MiB 的 stdin 也可传输；分帧不改变输入内容。
+
 默认要求 `enforcement=full`。仅在明确接受 best-effort 语义或做诊断时设置 `requireFullEnforcement: false`。这不会使 partial 变成 full。OpenShell 外层权限仍限制所有调用。
 
 本包不提供文件 watch、PTY、PTC 控制 fd、环境覆盖、Session 持久化或执行接管。不要将本地 FileSystem 当作沙箱内文件能力。SDK 路径将 `executionTimeoutSeconds` 用作客户端 deadline，明确关闭服务端 `timeoutSecs`；取消使用官方 SDK 的 RPC cancel，stdin EOF 使用 closeInput。`done` 等待最终 gRPC 状态；客户端 deadline／取消会拒绝该 Promise。`waitForExit` 在传输关闭后报告远端范围退出未确认，正常命令退出也不证明后代已停止。它不能用于要求范围退出证明的消费者；Context dispose 关闭或取消本次传输，不提供整个远端范围退出证明。

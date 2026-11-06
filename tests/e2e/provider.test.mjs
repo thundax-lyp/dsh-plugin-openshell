@@ -1,4 +1,6 @@
 import console from 'node:console';
+import { Buffer } from 'node:buffer';
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -140,6 +142,32 @@ try {
     assert.equal(echoed.stderr, literal);
     console.log(
         'PASS: executable lookup, stdin and literal argument transport',
+    );
+    const payload = Buffer.from('跨帧 stdin 🚀\n'.repeat(90000));
+    assert(payload.length > 1024 * 1024);
+    const digest = createHash('sha256').update(payload).digest('hex');
+    for (const piped of [false, true]) {
+        const large = ctx.subprocess.spawn({
+            argv: [
+                '/usr/local/bin/node',
+                '-e',
+                "const h=require('node:crypto').createHash('sha256');process.stdin.on('data',b=>h.update(b));process.stdin.on('end',()=>console.log(h.digest('hex')));",
+            ],
+            cwd: '/sandbox/project',
+            stdio: {
+                stdin: piped ? 'pipe' : { data: payload },
+                stdout: { maxBytes: 4096 },
+                stderr: { maxBytes: 4096 },
+            },
+            graceMs: 200,
+        });
+        if (piped) large.stdin.end(payload);
+        const result = await resultOf(large);
+        assert.equal(result.exitCode, 0, result.stderr);
+        assert.equal(result.stdout.trim(), digest);
+    }
+    console.log(
+        'PASS: >1 MiB fixed and piped stdin preserves exact remote SHA-256',
     );
     const other = new OpenShellConnection({
         ...config,

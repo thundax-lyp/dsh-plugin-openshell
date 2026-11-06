@@ -111,12 +111,21 @@ export function spawnInteractive(
         },
     );
     void opened.catch(() => {});
+    const writeInput = (session: OfficialExecSession, data: Buffer) => {
+        // Leave room for protobuf framing under the official 1 MiB RPC limit.
+        for (let offset = 0; offset < data.length; offset += 65536) {
+            signal.throwIfAborted();
+            session.write(data.subarray(offset, offset + 65536));
+        }
+    };
     const stdin =
         spec.stdio.stdin === 'pipe'
             ? new Writable({
                   write(chunk, _encoding, callback) {
                       void opened
-                          .then((session) => session.write(Buffer.from(chunk)))
+                          .then((session) =>
+                              writeInput(session, Buffer.from(chunk)),
+                          )
                           .then(() => callback(), callback);
                   },
                   final(callback) {
@@ -132,7 +141,7 @@ export function spawnInteractive(
         try {
             session = await opened;
             if (typeof spec.stdio.stdin === 'object') {
-                session.write(Buffer.from(spec.stdio.stdin.data));
+                writeInput(session, Buffer.from(spec.stdio.stdin.data));
                 session.closeInput();
             } else if (spec.stdio.stdin === 'ignore') session.closeInput();
             const pump = (async () => {

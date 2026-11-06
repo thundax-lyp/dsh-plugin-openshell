@@ -160,7 +160,7 @@ RC `@deepseek-ai/dsh-tool-fs-search` 的 glob/grep 不走 FileSystem 方法，�
 
 调用方将官方 SandboxClient 作为 `interactiveClient` 注入。本包不复制 SDK 的传输、认证或刷新逻辑，也不依赖 SDK 的私有字段。结构接口在 src/subprocess/interactive.ts，实际兼容验证使用官方 v0.1.6 源码 `ac7f615cd12d5cc49cb16eb1f5f10ffeb1e90f47` 构建的 SDK。
 
-SDK 路径始终使用 `tty:false`、`noLoginShell:true`、`timeoutSecs:0`，将 executionTimeoutSeconds 转为客户端 AbortSignal deadline。stdin EOF 使用 closeInput，取消使用 signal/cancel，二者不能混为一谈。输出泵与 session.done 并发，只有最终 gRPC 状态成功才返回命令退出码；末尾退出事件后 RPC 失败仍拒绝成功。管道尊重背压，收集及 spill 复用 DSH OutputCollector。terminate、调用方取消和 Context dispose 均取消本次 SDK 流，不停止整个沙箱。
+SDK 路径始终使用 `tty:false`、`noLoginShell:true`、`timeoutSecs:0`，将 executionTimeoutSeconds 转为客户端 AbortSignal deadline。固定 stdin.data 和管道 stdin 的每次写入均按至多 64 KiB 分帧，保留原始字节顺序，避免单条输入超过官方 1 MiB gRPC 消息上限。stdin EOF 使用 closeInput，取消使用 signal/cancel，二者不能混为一谈。输出泵与 session.done 并发，只有最终 gRPC 状态成功才返回命令退出码；末尾退出事件后 RPC 失败仍拒绝成功。管道尊重背压，收集及 spill 复用 DSH OutputCollector。terminate、调用方取消和 Context dispose 均取消本次 SDK 流，不停止整个沙箱。
 
 客户端 deadline 会拒绝 done，不伪造远端 exit=124。waitForExit 在传输结束后仍报告远端范围退出未确认；受测父进程和同组子进程消失，不等于任意逃逸后代已退出。生产代码没有 CLI 兼容分支，Subprocess Provider 直接继承 DSH SubprocessRuntime，仅复用 dsh-subprocess-local/output 的收集工具，不加载本地进程 Provider。
 
@@ -212,6 +212,8 @@ SDK 路径始终使用 `tty:false`、`noLoginShell:true`、`timeoutSecs:0`，将
 本次文件接入验收日期为 2026-11-05；文件路径检查通过不改变上表命令 enforcement=partial 的结论。未使用完整模型推理循环替代工具契约验证。
 
 本机文件契约覆盖 SDK stdin 协议、跨帧 UTF-8、目标隔离、默认根／模式、类型化错误、版本不符、上限及预取消／dispose；真实 fs.test.mjs 使用正式镜像上的实际文件方法和 RC 搜索执行流程。搜索测试的 Agent-facing Session/Projection 使用最小夹具，目录服务与 runRipgrep 为真实 RC 实现，不等于完整 DSH Agent 集成。
+
+2026-11-06，针对 PR #3 的大块 stdin review，新增超过 1 MiB 的固定与管道输入回归：修复前本机重现单帧超限，按 64 KiB 分帧后本机原始字节一致；真实远端两种输入的 SHA-256 与发送端一致。`pnpm check`、`pnpm test`、`pnpm build` 和完整 `pnpm test:remote` 通过，临时资源清理通过且原 Gateway 配置及沙箱清单不变。
 
 本机契约覆盖参数与 cwd 传递、partial 默认拒绝、回包版本不符、预取消、配置校验和取消后的不确定状态；SDK 适配另测绑定目标、stdin/输出、关闭服务端 timeout、最终 RPC 状态失败和预取消不派发。本机使用 SDK 结构夹具检查契约，不模拟或启动 CLI；这些检查不替代远端验收。
 
