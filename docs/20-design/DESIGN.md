@@ -207,6 +207,8 @@ SDK 路径始终使用 `tty:false`、`noLoginShell:true`、`timeoutSecs:0`，将
 
 依赖版本与兼容覆盖配置由根 pnpm 锁文件、pnpm-workspace.yaml 及沙箱／外部客户端的 npm 锁文件固定，变更后按 REQUIREMENTS.md 的验收入口复测。
 
+2026-11-06，改用固定 revision 的源码归档及 SHA-256 校验构建官方 SDK 后，重新运行 `pnpm test:remote`，退出码为 0。正式镜像、命令权限与执行、文件／工作区／搜索、取消／deadline／dispose、mTLS Compose 创建／复用／策略更新和认证拒绝场景均通过；临时资源清理通过，原 Gateway 配置与沙箱清单不变。环境仍为 partial，setsid 后代存活的已知边界保持不变；不构成 full 隔离或完整 Agent 循环验收。
+
 本次文件接入验收日期为 2026-11-05；文件路径检查通过不改变上表命令 enforcement=partial 的结论。未使用完整模型推理循环替代工具契约验证。
 
 本机文件契约覆盖 SDK stdin 协议、跨帧 UTF-8、目标隔离、默认根／模式、类型化错误、版本不符、上限及预取消／dispose；真实 fs.test.mjs 使用正式镜像上的实际文件方法和 RC 搜索执行流程。搜索测试的 Agent-facing Session/Projection 使用最小夹具，目录服务与 runRipgrep 为真实 RC 实现，不等于完整 DSH Agent 集成。
@@ -242,6 +244,6 @@ Docker driver 在 Gateway TLS 模式下要求 guest_tls_ca，供沙箱验证 Gat
 
 ## 文件与迁移
 
-README 维护使用方式和文件职责；AGENTS 维护开发路由。Node fixture 按 host、deploy、sandbox、fs、runtime、support 组织，测试入口在 fixtures 外。宿主上的官方 CLI 只用于临时 Gateway／沙箱准备、清理与清单核对；生产命令及权限矩阵均通过 SDK-only Provider 验收。重复的原始 SDK 探针、CLI 模拟器和独立 CLI 策略冒烟入口已删除，setsid 边界合并到正式 Provider 测试。沙箱运行时安装文件在 `src/runtime/`，构建输出在 `dist/`。远端验收先在忽略的 runtime/ 内构建固定 revision 的官方 SDK；该缓存不是生产依赖或全局路径配置。
+README 维护使用方式和文件职责；AGENTS 维护开发路由。Node fixture 按 host、deploy、sandbox、fs、runtime、support 组织，测试入口在 fixtures 外。宿主上的官方 CLI 只用于临时 Gateway／沙箱准备、清理与清单核对；生产命令及权限矩阵均通过 SDK-only Provider 验收。重复的原始 SDK 探针、CLI 模拟器和独立 CLI 策略冒烟入口已删除，setsid 边界合并到正式 Provider 测试。沙箱运行时安装文件在 `src/runtime/`，构建输出在 `dist/`。远端验收先下载固定 revision 的官方源码归档并校验 SHA-256，在忽略的 runtime/ 内仅提取 SDK、proto、Buf 配置及许可证并构建官方 SDK，不保留嵌套 Git 仓库或上游 tag；该缓存不是生产依赖或全局路径配置。
 
 远端编排只复制场景直接引用的宿主夹具，使用同一场景清单驱动复制和执行。无引用的调研解包目录、旧入口备份、一次性镜像导入脚本与镜像解包目录已清理；保留仍用于复跑的官方 SDK、依赖缓存与镜像归档。

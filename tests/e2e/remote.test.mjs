@@ -104,7 +104,10 @@ try {
                 join(bundle, 'client/tests/e2e', file),
             );
         await cp(
-            join(repo, 'runtime/openshell-source/sdk/typescript/dist'),
+            join(
+                repo,
+                'runtime/openshell-sdk-ac7f615cd12d5cc49cb16eb1f5f10ffeb1e90f47/sdk/typescript/dist',
+            ),
             join(bundle, 'client/sdk/dist'),
             { recursive: true },
         );

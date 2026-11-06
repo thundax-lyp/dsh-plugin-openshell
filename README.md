@@ -152,7 +152,7 @@ pnpm test:remote
 pnpm test:mtls
 ```
 
-本机 Provider 契约测试只使用根目录锁定的依赖，无需调试 runtime 或远端服务器。远端入口按沙箱 helper 与外部测试客户端的锁文件安装依赖，测试宿主需要访问 npm registry。入口还会在仓库内 `runtime/` 下载并构建固定 v0.1.6 revision 的官方 SDK，本机首次准备需要访问 GitHub、npm registry 和 Buf Schema Registry，后续复用缓存；它不依赖全局调试目录。
+本机 Provider 契约测试只使用根目录锁定的依赖，无需调试 runtime 或远端服务器。远端入口按沙箱 helper 与外部测试客户端的锁文件安装依赖，测试宿主需要访问 npm registry。入口还会在仓库内 `runtime/` 下载固定 v0.1.6 revision 的源码归档，校验 SHA-256 后仅提取 SDK、proto 和构建配置并构建官方 SDK（不克隆 Git 仓库），本机首次准备需要访问 GitHub、npm registry 和 Buf Schema Registry，后续复用缓存；它不依赖全局调试目录。
 
 远端测试需要 Linux x64、Node.js 24、npm、Docker Compose v2、cc、bwrap、unshare、已安装的 OpenShell 0.1.6 CLI 和 Gateway 基础配置。cc／bwrap／unshare 仅用于原生 ABI 与 namespace 诊断，不是生产 Provider 依赖。测试使用临时 Gateway 的 18180–18182 端口，按 deploy/runtime/Dockerfile 构建正式镜像，并额外构建诊断层；准备一个纯正式镜像沙箱和两个诊断沙箱，结束后核对清理及原 Gateway 配置、沙箱清单。不再需要预装测试基础镜像或复制宿主 Node。测试不部署 SSH 服务；SSH 只用于将测试文件发送到测试宿主并启动外部 DSH 验证进程。
 
