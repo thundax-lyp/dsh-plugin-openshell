@@ -2,7 +2,7 @@
 
 ## 规则与读取路由
 
-本文件面向 AI，负责工程任务路由。README.md 是面向使用者的交付产物，排除在开发约束和规则来源之外。对外行为、安装或配置变化时仍须同步 README。
+本文件面向 AI，以准确、无冗余的开发约束和读取路由为主。README.md 面向人类，以清晰、简单为主，允许与本文件重复必要信息，但不作为开发约束和规则来源。对外行为、安装或配置变化时同步 README 及相关指南。
 
 - 文档组织和同步遵循 [DOCUMENT-RULES.md](docs/00-governance/DOCUMENT-RULES.md)。
 - 提交前阅读 [COMMIT-RULES.md](docs/00-governance/COMMIT-RULES.md)。

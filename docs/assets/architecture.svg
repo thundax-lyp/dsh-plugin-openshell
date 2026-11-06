@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="640" viewBox="0 0 880 640" role="img" aria-labelledby="title desc">
+  <title id="title">DSH 与 OpenShell 架构</title>
+  <desc id="desc">沙箱外的 DSH 经插件、官方 SDK 和 Gateway 调用同一沙箱中的权限与文件辅助脚本 或命令进程，共享远端工作区。流动虚线表示调用方向，不表示实际执行时间。</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#eef2ff"/></linearGradient>
+    <filter id="shadow" x="-15%" y="-20%" width="130%" height="150%"><feDropShadow dy="3" stdDeviation="5" flood-color="#1e293b" flood-opacity=".07"/></filter>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M1 1 6 4 1 7" fill="none" stroke="#8b9cb8" stroke-width="1.4"/></marker>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif; fill: #1e293b; }
+      .heading { font-size: 15px; font-weight: 650; }
+      .label { font-size: 19px; font-weight: 650; }
+      .note { font-size: 13px; fill: #64748b; }
+      .wire { fill: none; stroke: #a4b2c9; stroke-width: 2; marker-end: url(#arrow); }
+      .flow { fill: none; stroke: #6366f1; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 3 17; animation: travel 2.4s linear infinite; }
+      .green { stroke: #0d9488; animation-delay: -.8s; }
+      @keyframes travel { to { stroke-dashoffset: -80; } }
+      @media (prefers-reduced-motion: reduce) { .flow { animation: none; } }
+    </style>
+  </defs>
+  <rect width="880" height="640" rx="24" fill="url(#bg)"/>
+  <text x="36" y="38" class="heading">DSH × OpenShell</text>
+  <text x="844" y="38" text-anchor="end" class="note">命令 · 文件 · 工作目录</text>
+
+  <rect x="28" y="58" width="824" height="148" rx="18" fill="#fff" stroke="#dce3ee"/>
+  <circle cx="51" cy="82" r="4" fill="#6366f1"/>
+  <text x="64" y="87" class="heading">沙箱外 · DSH 所在环境</text>
+  <g filter="url(#shadow)">
+    <rect x="52" y="108" width="176" height="72" rx="12" fill="#f8fafc" stroke="#dce3ee"/>
+    <rect x="300" y="108" width="230" height="72" rx="12" fill="#eef2ff" stroke="#c7d2fe"/>
+    <rect x="602" y="108" width="224" height="72" rx="12" fill="#f8fafc" stroke="#dce3ee"/>
+  </g>
+  <text x="140" y="139" text-anchor="middle" class="label">DSH</text>
+  <text x="140" y="161" text-anchor="middle" class="note">Agent 与工具</text>
+  <text x="415" y="139" text-anchor="middle" style="font-size:16px;font-weight:650">dsh-plugin-openshell</text>
+  <text x="415" y="161" text-anchor="middle" class="note">接入远端执行与文件能力</text>
+  <text x="714" y="139" text-anchor="middle" style="font-size:16px;font-weight:650">@nvidia/openshell-sdk</text>
+  <text x="714" y="161" text-anchor="middle" class="note">OpenShell 官方 TypeScript SDK</text>
+  <path class="wire" d="M228 144H292"/><path class="flow" d="M234 144H282"/>
+  <path class="wire" d="M530 144H594"/><path class="flow" d="M536 144H584"/>
+
+  <path class="wire" d="M714 180V246H578"/><path class="flow" d="M714 190V246H588"/>
+  <text x="738" y="228" class="note">远端调用</text>
+  <rect x="302" y="218" width="276" height="58" rx="14" fill="#1e293b" filter="url(#shadow)"/>
+  <text x="440" y="253" text-anchor="middle" style="fill:white;font-size:19px;font-weight:650">OpenShell Gateway</text>
+
+  <rect x="28" y="310" width="824" height="284" rx="18" fill="#f0fdfa" stroke="#99d5ce"/>
+  <circle cx="51" cy="337" r="4" fill="#0d9488"/>
+  <text x="64" y="342" class="heading">OpenShell 沙箱</text>
+  <text x="826" y="342" text-anchor="end" class="note">统一受 OpenShell 策略约束</text>
+  <path class="wire" d="M440 276V302H235V370"/>
+  <path class="wire" d="M440 302H645V370"/>
+  <path class="flow green" d="M440 282V302H235V358"/>
+  <path class="flow green" d="M440 302H645V358"/>
+
+  <rect x="64" y="378" width="342" height="88" rx="14" fill="#fff" stroke="#a7d9d3" filter="url(#shadow)"/>
+  <rect x="474" y="378" width="342" height="88" rx="14" fill="#fff" stroke="#a7d9d3" filter="url(#shadow)"/>
+  <text x="235" y="412" text-anchor="middle" class="label">权限与文件辅助脚本</text>
+  <text x="235" y="440" text-anchor="middle" class="note">包装受限命令 · 读写与编辑文件</text>
+  <text x="645" y="412" text-anchor="middle" class="label">命令进程</text>
+  <text x="645" y="440" text-anchor="middle" class="note">执行命令 · 使用沙箱内工作目录</text>
+  <path class="wire" d="M235 466V504H350V520"/>
+  <path class="wire" d="M645 466V504H530V520"/>
+  <path class="flow green" d="M235 472V504H350V514"/>
+  <path class="flow green" d="M645 472V504H530V514"/>
+  <rect x="254" y="528" width="372" height="44" rx="12" fill="#ccfbf1" stroke="#7dd3c7"/>
+  <text x="440" y="556" text-anchor="middle" style="font-size:16px;font-weight:600">共享工作区 /sandbox/project</text>
+  <text x="440" y="621" text-anchor="middle" class="note">受限命令先生成权限包装，再由插件通过 SDK 执行。</text>
+</svg>
