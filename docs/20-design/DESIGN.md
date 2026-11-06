@@ -160,7 +160,7 @@ RC `@deepseek-ai/dsh-tool-fs-search` 的 glob/grep 不走 FileSystem 方法，�
 
 调用方将官方 SandboxClient 作为 `interactiveClient` 注入。本包不复制 SDK 的传输、认证或刷新逻辑，也不依赖 SDK 的私有字段。结构接口在 src/subprocess/interactive.ts，实际兼容验证使用官方 v0.1.6 源码 `ac7f615cd12d5cc49cb16eb1f5f10ffeb1e90f47` 构建的 SDK。
 
-SDK 路径始终使用 `tty:false`、`noLoginShell:true`、`timeoutSecs:0`，将 executionTimeoutSeconds 转为客户端 AbortSignal deadline。stdin EOF 使用 closeInput，取消使用 signal/cancel，二者不能混为一谈。输出泵与 session.done 并发，只有最终 gRPC 状态成功才返回命令退出码；末尾退出事件后 RPC 失败仍拒绝成功。管道尊重背压，收集及 spill 复用 DSH OutputCollector。terminate、调用方取消和 Context dispose 均取消本次 SDK 流，不停止整个沙箱。
+SDK 路径始终使用 `tty:false`、`noLoginShell:true`、`timeoutSecs:0`，将 executionTimeoutSeconds 转为客户端 AbortSignal deadline。固定 stdin.data 和管道 stdin 的每次写入均按至多 64 KiB 分帧，保留原始字节顺序，避免单条输入超过官方 1 MiB gRPC 消息上限。stdin EOF 使用 closeInput，取消使用 signal/cancel，二者不能混为一谈。输出泵与 session.done 并发，只有最终 gRPC 状态成功才返回命令退出码；末尾退出事件后 RPC 失败仍拒绝成功。管道尊重背压，收集及 spill 复用 DSH OutputCollector。terminate、调用方取消和 Context dispose 均取消本次 SDK 流，不停止整个沙箱。
 
 客户端 deadline 会拒绝 done，不伪造远端 exit=124。waitForExit 在传输结束后仍报告远端范围退出未确认；受测父进程和同组子进程消失，不等于任意逃逸后代已退出。生产代码没有 CLI 兼容分支，Subprocess Provider 直接继承 DSH SubprocessRuntime，仅复用 dsh-subprocess-local/output 的收集工具，不加载本地进程 Provider。
 
@@ -207,9 +207,13 @@ SDK 路径始终使用 `tty:false`、`noLoginShell:true`、`timeoutSecs:0`，将
 
 依赖版本与兼容覆盖配置由根 pnpm 锁文件、pnpm-workspace.yaml 及沙箱／外部客户端的 npm 锁文件固定，变更后按 REQUIREMENTS.md 的验收入口复测。
 
+2026-11-06，改用固定 revision 的源码归档及 SHA-256 校验构建官方 SDK 后，重新运行 `pnpm test:remote`，退出码为 0。正式镜像、命令权限与执行、文件／工作区／搜索、取消／deadline／dispose、mTLS Compose 创建／复用／策略更新和认证拒绝场景均通过；临时资源清理通过，原 Gateway 配置与沙箱清单不变。环境仍为 partial，setsid 后代存活的已知边界保持不变；不构成 full 隔离或完整 Agent 循环验收。
+
 本次文件接入验收日期为 2026-11-05；文件路径检查通过不改变上表命令 enforcement=partial 的结论。未使用完整模型推理循环替代工具契约验证。
 
 本机文件契约覆盖 SDK stdin 协议、跨帧 UTF-8、目标隔离、默认根／模式、类型化错误、版本不符、上限及预取消／dispose；真实 fs.test.mjs 使用正式镜像上的实际文件方法和 RC 搜索执行流程。搜索测试的 Agent-facing Session/Projection 使用最小夹具，目录服务与 runRipgrep 为真实 RC 实现，不等于完整 DSH Agent 集成。
+
+2026-11-06，针对 PR #3 的大块 stdin review，新增超过 1 MiB 的固定与管道输入回归：修复前本机重现单帧超限，按 64 KiB 分帧后本机原始字节一致；真实远端两种输入的 SHA-256 与发送端一致。`pnpm check`、`pnpm test`、`pnpm build` 和完整 `pnpm test:remote` 通过，临时资源清理通过且原 Gateway 配置及沙箱清单不变。
 
 本机契约覆盖参数与 cwd 传递、partial 默认拒绝、回包版本不符、预取消、配置校验和取消后的不确定状态；SDK 适配另测绑定目标、stdin/输出、关闭服务端 timeout、最终 RPC 状态失败和预取消不派发。本机使用 SDK 结构夹具检查契约，不模拟或启动 CLI；这些检查不替代远端验收。
 
@@ -242,6 +246,12 @@ Docker driver 在 Gateway TLS 模式下要求 guest_tls_ca，供沙箱验证 Gat
 
 ## 文件与迁移
 
-README 维护使用方式和文件职责；AGENTS 维护开发路由。Node fixture 按 host、deploy、sandbox、fs、runtime、support 组织，测试入口在 fixtures 外。宿主上的官方 CLI 只用于临时 Gateway／沙箱准备、清理与清单核对；生产命令及权限矩阵均通过 SDK-only Provider 验收。重复的原始 SDK 探针、CLI 模拟器和独立 CLI 策略冒烟入口已删除，setsid 边界合并到正式 Provider 测试。沙箱运行时安装文件在 `src/runtime/`，构建输出在 `dist/`。远端验收先在忽略的 runtime/ 内构建固定 revision 的官方 SDK；该缓存不是生产依赖或全局路径配置。
+README 维护概览与阅读导航，docs/30-guides 维护部署、接入、验证方式及文件职责；AGENTS 维护开发路由。Node fixture 按 host、deploy、sandbox、fs、runtime、support 组织，测试入口在 fixtures 外。宿主上的官方 CLI 只用于临时 Gateway／沙箱准备、清理与清单核对；生产命令及权限矩阵均通过 SDK-only Provider 验收。重复的原始 SDK 探针、CLI 模拟器和独立 CLI 策略冒烟入口已删除，setsid 边界合并到正式 Provider 测试。沙箱运行时安装文件在 `src/runtime/`，构建输出在 `dist/`。远端验收先下载固定 revision 的官方源码归档并校验 SHA-256，在忽略的 runtime/ 内仅提取 SDK、proto、Buf 配置及许可证并构建官方 SDK，不保留嵌套 Git 仓库或上游 tag；该缓存不是生产依赖或全局路径配置。
 
 远端编排只复制场景直接引用的宿主夹具，使用同一场景清单驱动复制和执行。无引用的调研解包目录、旧入口备份、一次性镜像导入脚本与镜像解包目录已清理；保留仍用于复跑的官方 SDK、依赖缓存与镜像归档。
+
+## 宿主部署入口
+
+`deploy/deploy.mjs` 在 Linux x64 宿主加载根 `.env`，准备固定 0.1.6 官方 CLI（归档 SHA-256 固定校验、临时目录提取并检查版本后发布；已有或显式指定的 CLI 版本不符即拒绝），调用现有 Compose 并等待初始化容器退出 0 及 READY 日志。下载与 Docker 操作均有时间预算，失败不自动重放创建请求。默认 HTTP 仅创建凭据目录；HTTPS 预检三份 mTLS 文件，不签发证书、不改 Gateway。Gateway 的无认证选项与网络访问控制由部署方管理。原有 `docker compose up -d` 入口保持有效，Provider 执行路径不使用 CLI。
+
+2026-11-06 验证：`pnpm check`、`pnpm test`、`pnpm build` 通过。新增宿主契约覆盖 CLI 缺失、版本拒绝、摘要拒绝与清理，以及 Compose 非零退出、缺少 READY、等待超时和不重试。官方发布归档在本机通过真实摘要校验、tar 解压及权限发布检查；Linux CLI 的版本调用在该本机检查中使用夹具。`pnpm test:remote` 退出 0：HTTP 保留直接 Compose 首次创建、第二次使用宿主脚本复用；mTLS 创建、复用、策略更新均使用宿主脚本，实际校验并复用测试主机已有 CLI。远端文件、进程与权限回归通过，临时资源清理及原 Gateway 清单检查通过。补测中 Linux 远端直连 GitHub 超时，下载失败的临时目录清理通过；未完成该主机在线下载成功验收。随后从本机获取相同官方归档并传入远端，实际 SHA-256 校验、tar 解压、可执行权限、Linux 二进制版本检查与再次复用均通过，临时资源已清理。下载错误提供预装官方 CLI 并设置 DSH_OPENSHELL_CLI_PATH 的提示；README 同步离线准备方式。

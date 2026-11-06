@@ -14,7 +14,7 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "check": "pnpm typecheck && pnpm lint && pnpm format:check",
-        "test": "node --experimental-strip-types tests/sandbox/provider.test.mjs && node --experimental-strip-types tests/subprocess/interactive.test.mjs && node --experimental-strip-types tests/fs/provider.test.mjs && node tests/deploy/compose.test.mjs",
+        "test": "node --experimental-strip-types tests/sandbox/provider.test.mjs && node --experimental-strip-types tests/subprocess/interactive.test.mjs && node --experimental-strip-types tests/fs/provider.test.mjs && node tests/deploy/compose.test.mjs && node tests/deploy/bootstrap.test.mjs",
         "test:remote": "node scripts/prepare-official-sdk.mjs && node --experimental-strip-types tests/e2e/remote.test.mjs",
         "build": "node scripts/build.mjs",
         "test:mtls": "node scripts/prepare-official-sdk.mjs && node --experimental-strip-types tests/e2e/remote.test.mjs --mtls-only"

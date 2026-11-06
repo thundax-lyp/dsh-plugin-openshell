@@ -216,11 +216,16 @@ export class SandboxHost {
                 await this.save();
                 let originalId;
                 for (let run = 0; run < 2; run++) {
-                    await command([...compose, 'up', '-d'], {
-                        cwd: composeRoot,
-                        env,
-                        timeout: 240000,
-                    });
+                    await command(
+                        run === 0
+                            ? [...compose, 'up', '-d']
+                            : ['node', join(composeRoot, 'deploy/deploy.mjs')],
+                        {
+                            cwd: composeRoot,
+                            env,
+                            timeout: 240000,
+                        },
+                    );
                     const ids = (
                         await command(
                             [...compose, 'ps', '-a', '-q', 'runtime'],
