@@ -30,6 +30,8 @@ DSH 固定为 `0.2.1-rc.4`，Cordis 为 `4.0.5`，真实验证使用 OpenShell `
 
 正式构建、构建过滤、沙箱策略及验收诊断镜像配置均位于 deploy/；测试逻辑留在 tests/。R11：通过 deploy/compose.yaml 的 docker compose up -d 完成镜像构建及一次性部署：官方 CLI 创建／检查指定沙箱，等待 READY，以 policy set --wait 确认策略加载。验收覆盖 HTTP/mTLS 首次创建、重复启动、策略更新后的有效版本及拒绝无证书／错误 CA 客户端；默认沙箱名 dsh-openshell，并在部署前校验 1–19 字符 DNS label。重复启动复用同一沙箱；同名归属或镜像引用冲突失败，不自动重建。既有 Gateway 与客户端身份由部署方准备，部署脚本不是 Provider 的 CLI 兼容路径。
 
+宿主入口 `node deploy/deploy.mjs` 自动准备固定版本 CLI 并校验归档 SHA-256，复用已有兼容 CLI，等待 Compose 初始化成功。默认 HTTP 无需证书；HTTPS/mTLS 预检证书文件。不得自动修改已有 Gateway 的认证配置或在失败后重试不确定的创建。
+
 提供 deploy/runtime/Dockerfile、对应 Dockerfile.dockerignore 与 deploy/openshell/policy.yaml。镜像包含 Node.js 24、权限／文件 helper、Linux x64 ripgrep 和锁定的 RC 依赖，默认使用非 root 用户与 /sandbox/project 工作区，运行时代码对该用户不可写。镜像不依赖测试宿主 Node、私有基础镜像、SDK 或测试诊断文件。
 
 验收必须先通过未叠加诊断工具的正式镜像创建沙箱，验证沙箱外 DSH 经 SDK 调用 helper、包装并执行实际命令；再用独立诊断层检查权限边界。保持 strict/partial 语义及既有取消限制。

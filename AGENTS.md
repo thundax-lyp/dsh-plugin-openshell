@@ -14,7 +14,7 @@
 
 ## 项目结构
 
-部署配置统一维护在 deploy/，包括 compose.yaml、正式与测试诊断 Dockerfile、各自的 Dockerfile.dockerignore 和 OpenShell policy；测试逻辑仍在 tests/。构建 context 保持仓库根目录，正式部署使用 docker compose up -d（根 .env 指定 COMPOSE_FILE），Compose 构建镜像并运行 deploy/openshell/deploy.mjs，通过官方 CLI 创建沙箱与加载策略，不在根目录复制部署配置。
+部署配置统一维护在 deploy/，包括 compose.yaml、正式与测试诊断 Dockerfile、各自的 Dockerfile.dockerignore 和 OpenShell policy；测试逻辑仍在 tests/。构建 context 保持仓库根目录，宿主部署入口 deploy/deploy.mjs 准备并校验官方 CLI、预检配置并等待部署结果；底层保持 docker compose up -d（根 .env 指定 COMPOSE_FILE），Compose 构建镜像并运行 deploy/openshell/deploy.mjs，通过官方 CLI 创建沙箱与加载策略，不在根目录复制部署配置。
 
 deploy/runtime/Dockerfile 与 deploy/openshell/policy.yaml 是沙箱运行时交付文件，构建上下文按 deploy/runtime/Dockerfile.dockerignore 允许列表维护；不得再把测试宿主 Node 或私有镜像作为正式构建的前置条件。src/index.ts 是 dsh-sandbox-openshell 的插件入口。src/connection.ts 仅适配官方 SDK；src/sandbox、src/subprocess、src/fs 提供同一沙箱的权限包装、普通执行与文件接口；src/workspace 绑定远端目录并复用 DSH WorkingDirectoryService；src/runtime 保存沙箱内 LocalSandboxProvider／SandboxedFileSystem helper 及锁文件。不得再引入自建 SSH、Run/generation、租约、SQLite Authority、持久化或控制器接管。
 

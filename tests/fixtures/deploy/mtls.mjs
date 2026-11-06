@@ -151,7 +151,7 @@ async function runMtls(host) {
     const policyPath = join(composeRoot, 'deploy/openshell/policy.yaml');
     const originalPolicy = await readFile(policyPath, 'utf8');
     const runCompose = async () => {
-        await command(['docker', 'compose', 'up', '-d'], {
+        await command(['node', join(composeRoot, 'deploy/deploy.mjs')], {
             cwd: composeRoot,
             env,
             timeout: 240000,

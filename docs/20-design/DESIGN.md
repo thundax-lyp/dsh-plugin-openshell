@@ -247,3 +247,9 @@ Docker driver 在 Gateway TLS 模式下要求 guest_tls_ca，供沙箱验证 Gat
 README 维护使用方式和文件职责；AGENTS 维护开发路由。Node fixture 按 host、deploy、sandbox、fs、runtime、support 组织，测试入口在 fixtures 外。宿主上的官方 CLI 只用于临时 Gateway／沙箱准备、清理与清单核对；生产命令及权限矩阵均通过 SDK-only Provider 验收。重复的原始 SDK 探针、CLI 模拟器和独立 CLI 策略冒烟入口已删除，setsid 边界合并到正式 Provider 测试。沙箱运行时安装文件在 `src/runtime/`，构建输出在 `dist/`。远端验收先下载固定 revision 的官方源码归档并校验 SHA-256，在忽略的 runtime/ 内仅提取 SDK、proto、Buf 配置及许可证并构建官方 SDK，不保留嵌套 Git 仓库或上游 tag；该缓存不是生产依赖或全局路径配置。
 
 远端编排只复制场景直接引用的宿主夹具，使用同一场景清单驱动复制和执行。无引用的调研解包目录、旧入口备份、一次性镜像导入脚本与镜像解包目录已清理；保留仍用于复跑的官方 SDK、依赖缓存与镜像归档。
+
+## 宿主部署入口
+
+`deploy/deploy.mjs` 在 Linux x64 宿主加载根 `.env`，准备固定 0.1.6 官方 CLI（归档 SHA-256 固定校验、临时目录提取并检查版本后发布；已有或显式指定的 CLI 版本不符即拒绝），调用现有 Compose 并等待初始化容器退出 0 及 READY 日志。下载与 Docker 操作均有时间预算，失败不自动重放创建请求。默认 HTTP 仅创建凭据目录；HTTPS 预检三份 mTLS 文件，不签发证书、不改 Gateway。Gateway 的无认证选项与网络访问控制由部署方管理。原有 `docker compose up -d` 入口保持有效，Provider 执行路径不使用 CLI。
+
+2026-11-06 验证：`pnpm check`、`pnpm test`、`pnpm build` 通过。新增宿主契约覆盖 CLI 缺失、版本拒绝、摘要拒绝与清理，以及 Compose 非零退出、缺少 READY、等待超时和不重试。官方发布归档在本机通过真实摘要校验、tar 解压及权限发布检查；Linux CLI 的版本调用在该本机检查中使用夹具。`pnpm test:remote` 退出 0：HTTP 保留直接 Compose 首次创建、第二次使用宿主脚本复用；mTLS 创建、复用、策略更新均使用宿主脚本，实际校验并复用测试主机已有 CLI。远端文件、进程与权限回归通过，临时资源清理及原 Gateway 清单检查通过。补测中 Linux 远端直连 GitHub 超时，下载失败的临时目录清理通过；未完成该主机在线下载成功验收。随后从本机获取相同官方归档并传入远端，实际 SHA-256 校验、tar 解压、可执行权限、Linux 二进制版本检查与再次复用均通过，临时资源已清理。下载错误提供预装官方 CLI 并设置 DSH_OPENSHELL_CLI_PATH 的提示；README 同步离线准备方式。

@@ -36,6 +36,10 @@ try {
         await mkdir(join(bundle, 'runtime'), { recursive: true });
         await mkdir(join(bundle, 'image/deploy/runtime'), { recursive: true });
         await copyFile(
+            join(repo, 'deploy/deploy.mjs'),
+            join(bundle, 'image/deploy/deploy.mjs'),
+        );
+        await copyFile(
             join(repo, 'deploy/compose.yaml'),
             join(bundle, 'image/deploy/compose.yaml'),
         );
